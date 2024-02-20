@@ -1,3 +1,4 @@
+"use client"
 import { LucideLock } from "lucide-react";
 import { SetStateAction, useEffect, useState } from "react";
 import VideoPlayer from "./videoplayer";
@@ -5,6 +6,7 @@ import Image from "next/image";
 
 type MediaType = { media: string; type: string } | null;
 type MediaDataType = { url: string; locked: boolean; type: string }[];
+
 const images: MediaDataType = [
     {
         url:
@@ -52,12 +54,14 @@ const images: MediaDataType = [
 ];
 const MediaPanelImageCard = ({ sort }: { sort: string }) => {
     const [data, setData] = useState<MediaDataType>(images);
-    const mediasort =
-        sort === "all" ? images : images.filter((media) => media.type === sort);
-
+    const [imageOpen, setImageOpen] = useState(false);
+    
+    
     useEffect(() => {
+        const mediasort =
+        sort === "all" ? images : images.filter((media) => media.type === sort);
         setData(mediasort);
-    }, [setData, mediasort]);
+    }, [setData, sort]);
 
     const [preview, setPreview] = useState<MediaType | null>({
         media: "",
@@ -71,6 +75,9 @@ const MediaPanelImageCard = ({ sort }: { sort: string }) => {
     ) => {
         if (locked) return;
         setPreview({ media, type });
+        if (type === "image") {
+            setImageOpen(true)
+        }
     };
 
     return (
@@ -94,6 +101,8 @@ const MediaPanelImageCard = ({ sort }: { sort: string }) => {
                         close={setPreview}
                     />
                     <PreviewMediaOverlayImage
+                        setImageOpen={setImageOpen}
+                        imageOpen={imageOpen}
                         media={preview?.type === "image" ? preview : null}
                         close={setPreview}
                     />
@@ -135,27 +144,32 @@ const PreviewMediaOverlayVideo = ({
 };
 const PreviewMediaOverlayImage = ({
     media,
+    imageOpen,
     close,
+    setImageOpen
 }: {
     media: MediaType;
+    imageOpen: boolean;
     close: React.Dispatch<SetStateAction<MediaType | null>>;
+    setImageOpen: React.Dispatch<SetStateAction<boolean>>;
 }) => {
     return (
         <div
             onClick={(e) => {
                 e.stopPropagation();
                 close({ media: "", type: "" });
+                setImageOpen(false)
             }}
-            className={`fixed transition-all ease-in-out duration-200 inset-0 w-full flex items-center justify-center bg-black z-50 bg-opacity-20
-            ${media?.media ? "opacity-100 pointer-events-all" : "opacity-0 pointer-events-none"}`}
+            className={`fixed transition-all ease-in-out duration-300 inset-0 w-full flex items-center justify-center bg-black z-50 bg-opacity-20
+            ${imageOpen ? "opacity-100 pointer-events-all" : "opacity-0 pointer-events-none"}`}
         >
             <div className="p-4">
                 <Image
                     width={1200}
                     height={1200}
                     priority
-                    src={media ? media.media : "/site/dark.svg"}
-                    className={`w-screen md:w-[550px] object-cover animate-zoom transition-all duration-200 ${media?.media ? "scale-100" : "scale-75"
+                    src={media ? media?.media : "/site/dark.svg"}
+                    className={`w-screen md:w-[550px] object-cover transition-all duration-300 ${imageOpen ? "scale-100" : "scale-75"
                         }`}
                     alt=""
                 />
@@ -165,3 +179,4 @@ const PreviewMediaOverlayImage = ({
 };
 
 export default MediaPanelImageCard;
+

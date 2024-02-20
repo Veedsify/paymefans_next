@@ -1,8 +1,9 @@
 "use client"
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import PostPanel from "./postpanel";
 import MediaPanel from "./mediapanel";
+import LoadingPost from "./loading_post";
 const ProfileTabs = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   return (
@@ -48,7 +49,7 @@ const ProfileTabs = () => {
           <PostPanel />
         </TabPanel>
         <TabPanel>
-          <MediaPanel/>
+          <MediaPanel />
         </TabPanel>
         <TabPanel>
           <div className="py-8">

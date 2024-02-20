@@ -1,3 +1,4 @@
+"use client"
 import { useState } from "react";
 import MediaPanelImageCard from "./media_panel_image_card";
 

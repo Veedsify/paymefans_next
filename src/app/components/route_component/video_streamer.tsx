@@ -1,5 +1,7 @@
 "use client"
+import { useRouter } from "next/navigation";
 import React, { useEffect, useRef } from "react";
+import swal from "sweetalert";
 
 interface VideoStreamerProps {
     className?: string;
@@ -7,18 +9,19 @@ interface VideoStreamerProps {
 
 const VideoStreamer: React.FC<VideoStreamerProps> = ({ className }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
+    const router = useRouter();
 
     useEffect(() => {
+        let stream: MediaStream | null = null;
+
         const fetchVideoStream = async () => {
             try {
-                // Check if navigator.mediaDevices.getUserMedia is supported
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     console.error("Camera and microphone access not supported!");
                     return;
                 }
 
-                // Request user permission for camera and microphone
-                const stream = await navigator.mediaDevices.getUserMedia({
+                stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         width: { ideal: 1920 },
                         height: { ideal: 1080 }
@@ -34,9 +37,27 @@ const VideoStreamer: React.FC<VideoStreamerProps> = ({ className }) => {
             }
         };
 
-        // Request permission when component mounts
         fetchVideoStream();
+
+        return () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
     }, []);
+
+    useEffect(() => {
+        const handleBeforeUnoad = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnoad);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnoad);
+        };
+    }, []);
+
 
     return (
         <>

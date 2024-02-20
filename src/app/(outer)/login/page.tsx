@@ -1,7 +1,35 @@
+"use client"
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import toast from "react-hot-toast";
 
 const Login = () => {
+    const router = useRouter()
+    const [loginCredentials, setLoginCredentials] = useState({
+        email: "",
+        password: ""
+    });
+    const handleLoginInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setLoginCredentials({ ...loginCredentials, [e.target.name]: e.target.value });
+    }
+    const submitLoginForm = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const loginThisUser = await signIn("credentials", {
+            email: loginCredentials.email,
+            password: loginCredentials.password,
+            redirect: true,
+        });
+        if (loginThisUser?.ok) {
+            toast.success("Login successful");
+            return router.push(loginThisUser.url as string);
+        } else if (loginThisUser?.error) {
+            toast.error("Invalid Login credentials");
+            return;
+        }
+    }
 
     return (
         <div className="min-h-screen lg:p-0 bg-black p-5">
@@ -16,12 +44,12 @@ const Login = () => {
                         </Link>
                     </div>
                     <h1 className="mt-auto mb-5 text-2xl font-bold text-white ">Sign in</h1>
-                    <form action="" className="flex-1 w-full mb-5">
+                    <form action="" className="flex-1 w-full mb-5" onSubmit={submitLoginForm}>
                         <div className="flex flex-col gap-3 mb-4">
-                            <input type="email" id="email" className="block w-full px-3 py-3 text-sm font-bold text-white bg-transparent rounded-lg outline outline-white outline-1 md:max-w-lg" placeholder="Email" />
+                            <input type="email" name="email" id="email" onChange={handleLoginInput} className="block w-full px-3 py-3 text-sm font-bold text-white bg-transparent rounded-lg outline outline-white outline-1 md:max-w-lg" placeholder="Email" />
                         </div>
                         <div className="flex flex-col gap-3 mb-5">
-                            <input type="password" id="password" className="block w-full px-3 py-3 text-sm font-bold text-white bg-transparent rounded-lg outline outline-white outline-1 md:max-w-lg" placeholder="Password" />
+                            <input type="password" name="password" id="password" onChange={handleLoginInput} className="block w-full px-3 py-3 text-sm font-bold text-white bg-transparent rounded-lg outline outline-white outline-1 md:max-w-lg" placeholder="Password" />
                         </div>
                         <button className="w-full px-3 py-3 text-sm font-bold text-white rounded-lg bg-primary-dark-pink md:max-w-lg">Sign in</button>
                     </form>

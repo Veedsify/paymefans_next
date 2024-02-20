@@ -2,7 +2,7 @@
 import { LucideHeart, LucideMessageSquare, LucideRepeat2, LucideShare } from "lucide-react";
 import Link from "next/link";
 import QuickPostActions from "../sub_componnets/quick_post_actions";
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import Image from "next/image";
 
 interface PostComponentProps {
@@ -15,12 +15,14 @@ interface PostComponentProps {
     data: {
         post: string;
         images: string[];
+        videos?: string[];
         time: string;
     };
 }
 const PostComponent: React.FC<PostComponentProps> = ({ user, data }) => {
     const imageLength = data.images.length;
     const [activeImage, setActiveImage] = useState<string | null>(null)
+    const [open, setOpen] = useState<boolean>(false)
     return (
         <div className="mb-10">
             <div className="flex items-center justify-between text-gray-500 text-sm mb-2">
@@ -49,7 +51,10 @@ const PostComponent: React.FC<PostComponentProps> = ({ user, data }) => {
                             width={200}
                             height={200}
                             priority
-                            onClick={() => setActiveImage(image)}
+                            onClick={() => {
+                                setActiveImage(image)
+                                setOpen(true)
+                            }}
                             className="w-full rounded-lg mt-3 aspect-square object-cover cursor-pointer"
                         />
                         {index === 2 && data.images.length > 3 ? (
@@ -60,7 +65,7 @@ const PostComponent: React.FC<PostComponentProps> = ({ user, data }) => {
                     </div>
                 ))}
             </div>
-            <PostComponentPreview image={activeImage} close={setActiveImage} />
+            <PostComponentPreview open={open} image={activeImage} close={setOpen} />
             <div className="flex mt-6 justify-around text-sm w-full text-gray-600 py-1">
                 <span className="flex items-center gap-1 text-xs cursor-pointer font-medium ">
                     <LucideHeart size={20} />
@@ -85,18 +90,17 @@ const PostComponent: React.FC<PostComponentProps> = ({ user, data }) => {
 export default PostComponent;
 
 
-const PostComponentPreview = ({ image, close }: { image: string | null, close: React.Dispatch<SetStateAction<string | null>> }) => {
-
+const PostComponentPreview = ({ image, open, close }: { image: string | null, open: boolean, close: React.Dispatch<SetStateAction<boolean>> }) => {
     return (
         <div
             onClick={(e) => {
                 e.currentTarget.classList.remove("opacity-100")
-                close(null)
+                close(false)
             }}
             className={`fixed transition-all ease-in-out inset-0 w-full flex items-center justify-center bg-black z-50 bg-opacity-90 duration-300
-            ${image ? "opacity-100 pointer-events-all" : "opacity-0 pointer-events-none"}`}>
+            ${open ? "opacity-100 pointer-events-all" : "opacity-0 pointer-events-none"}`}>
             <div className="p-4">
-                <Image src={image ? image : "/site/dark.svg"} width={1000} height={1000} priority className={`w-screen md:w-[550px] block object-cover transition-all duration-200 border-none ${image ? "scale-100" : "scale-75"}`} alt="image preview" />
+                <Image src={`${image ? image : '/site/dark.svg'}`} width={1000} height={1000} priority className={`w-screen md:w-[550px] block object-cover transition-all duration-200 border-none ${open ? "scale-100" : "scale-75"}`} alt="image preview" />
             </div>
         </div>
     )

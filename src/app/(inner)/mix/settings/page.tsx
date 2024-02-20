@@ -2,7 +2,7 @@
 import Toggle from "@/app/components/sub_componnets/checked";
 import SetSubscription from "@/app/components/sub_componnets/setsubscription";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 const Settings = () => {
     const [subscription, setSubscriptionState] = useState(false);
 

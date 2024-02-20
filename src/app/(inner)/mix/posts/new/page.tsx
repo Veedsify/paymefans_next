@@ -35,7 +35,7 @@ const NewPost = () => {
     const [postAudience, setPostAudience] = useState<postAudienceDataProps>({
         id: 1,
         name: "Public",
-        icon: <LucideLock size={20} className="inline" />
+        icon: <LucideEye size={20} className="inline" />
     });
     const updatePostAudience = (e: MouseEvent<HTMLLIElement>) => {
         const id = e.currentTarget.getAttribute("data-id");
@@ -113,7 +113,7 @@ const NewPost = () => {
                 </div>
 
                 <textarea
-                    className="block text-sm leading-relaxed text-gray-700 font-medium w-full resize-none p-3 outline-none mt-3 overflow-auto h-[40vh]"
+                    className="block border border-gray-100 rounded-md mb-3 text-sm leading-relaxed text-gray-700 font-medium w-full resize-none p-3 outline-none mt-3 overflow-auto h-[40vh]"
                     placeholder="What’s on your mind?"
                     onChange={checkLimit}></textarea>
                 <div>

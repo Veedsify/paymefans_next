@@ -5,11 +5,14 @@ import { useEffect } from "react";
 import Link from "next/link"
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { signOut, useSession } from "next-auth/react";
+import swal from "sweetalert";
 
 
 const SideBar = () => {
   const { sideBarState, setSideBar } = useSideBarContext()
   const pathname = usePathname()
+  const { data: session } = useSession()
   useEffect(() => {
     const closeSideBar = () => {
       setSideBar(false)
@@ -29,15 +32,15 @@ const SideBar = () => {
               width={50}
               height={50}
               priority
-              src="/images/login_image.png"
+              src={session?.user.image.url || "/site/avatar.png"}
               className="object-cover w-12 h-12 rounded-full"
               alt=""
             />
             <div>
               <h2 className="mb-0 text-sm font-bold leading-none">
-                Dike Wisdom
+                {session?.user.name}
               </h2>
-              <span className="text-sm text-gray-600">@dikewisdom</span>
+              <span className="text-sm text-gray-600">{session?.user.username}</span>
             </div>
           </div>
           <div className="pt-5 mb-3">
@@ -90,10 +93,24 @@ const SideBar = () => {
               <LucideSettings />
               <p>Settings & Privacy</p>
             </Link>
-            <Link href="/mix/" className="flex items-center gap-5 p-2 mb-2 transition-all duration-200 hover:bg-gray-200 rounded-xl">
+            <span className="flex items-center gap-5 p-2 mb-2 transition-all duration-200 hover:bg-gray-200 rounded-xl cursor-pointer select-none"
+              onClick={() => {
+                swal({
+                  title: "Are you sure?",
+                  text: "You are about to logout",
+                  icon: "warning",
+                  buttons: ["Cancel", "Logout"],
+                  dangerMode: true,
+                }).then((willLogout) => {
+                  if (willLogout) {
+                    signOut({ callbackUrl: "/login" })
+                  }
+                });
+              }}
+            >
               <LucideLogOut />
               <p>Logout</p>
-            </Link>
+            </span>
           </div>
         </div>
       </div>

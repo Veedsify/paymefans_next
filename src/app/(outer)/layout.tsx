@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
+import { Toaster } from "react-hot-toast";
 
 const font = Inter({ subsets: ["cyrillic", "cyrillic-ext", "greek", "greek-ext", "latin", "latin-ext"], display: "swap", adjustFontFallback: false });
 
@@ -18,6 +19,11 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={font.className}>
+                <Toaster
+                    toastOptions={{
+                        className: "text-lg"
+                    }}
+                />
                 {children}
             </body>
         </html>

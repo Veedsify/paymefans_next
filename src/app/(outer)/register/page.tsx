@@ -4,17 +4,18 @@ import { useUser } from "@/app/lib/userContext";
 import { UserRegisterType } from "@/app/types/user";
 import Image from "next/image";
 import Link from "next/link";
-import { ChangeEvent, MouseEvent, useEffect, useState } from "react";
+import { redirect, useRouter } from "next/navigation";
+import { ChangeEvent, FormEvent, MouseEvent, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const Register = () => {
     const [country, setCountry] = useState<string>("Nigeria");
     const [countryList, setCountryList] = useState<boolean>(false);
     const [userData, setUserData] = useState<UserRegisterType | null>(null);
-    const { setUser } = useUser();
-
+    const { setUser, user } = useUser();
+    const router = useRouter()
     const UserInputCaptured = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-
         // Update userData state using spread operator to ensure immutability:
         setUserData({
             ...userData,
@@ -26,10 +27,8 @@ const Register = () => {
         // Update user state in the context only when userData changes:
         if (userData) {
             setUser(userData);
+            console.log(userData)
         }
-
-        // Log userData for debugging or validation:
-        console.log(userData);
     }, [userData, setUser]);
 
     const selectCountry = (e: MouseEvent<HTMLButtonElement>) => {
@@ -49,6 +48,36 @@ const Register = () => {
         setCountryList(false);
     };
 
+    function CreateNewUserFunction(e: FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        if (!user?.name) {
+            toast.error("Sorry your name is required");
+            return
+        }
+        if (!user.email) {
+            toast.error("Sorry an email address is required")
+            return
+        }
+        if (!user.phone) {
+            toast.error("Sorry a phone number is required")
+            return
+        }
+        if (!user.location) {
+            toast.error("Please select your location")
+            return
+        }
+        if (!user.password || user.password.length < 8) {
+            toast.error("Password length should be more than 8 characters")
+            return
+        }
+        if (!user.terms) {
+            toast.error("Please accept our terms of service")
+            return
+        }
+
+        router.push("/register/username");
+    }
+
     return (
         <div className="min-h-screen lg:p-0 bg-black p-5">
             <div className="lg:grid grid-cols-2 items-start justify-center mx-auto">
@@ -62,9 +91,11 @@ const Register = () => {
                         </Link>
                     </div>
                     <h1 className="mt-auto mb-5 text-2xl font-bold  text-white">Sign up</h1>
-                    <form action="" className="flex-1 w-full mb-5" autoComplete="false">
+                    <form action="" className="flex-1 w-full mb-5" autoComplete="false"
+                        onSubmit={CreateNewUserFunction}
+                    >
                         <div className="flex flex-col gap-3 mb-4">
-                            <input type="text" onChange={UserInputCaptured} name="fullname" className="block w-full px-3 py-3 text-sm font-bold text-white  bg-transparent rounded-lg outline outline-white outline-1  md:max-w-lg" placeholder="Full Name" />
+                            <input type="text" onChange={UserInputCaptured} name="name" className="block w-full px-3 py-3 text-sm font-bold text-white  bg-transparent rounded-lg outline outline-white outline-1  md:max-w-lg" placeholder="Full Name" />
                         </div>
                         <div className="flex flex-col gap-3 mb-4">
                             <input type="email" onChange={UserInputCaptured} name="email" className="block w-full px-3 py-3 text-sm font-bold text-white  bg-transparent rounded-lg outline outline-white outline-1  md:max-w-lg" placeholder="Email" />

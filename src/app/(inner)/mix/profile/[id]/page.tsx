@@ -1,9 +1,7 @@
-import BannerComponent from "@/app/components/lib_components/banner_component";
-import EditProfileButton from "@/app/components/sub_componnets/editprofileButton";
+import UserNotFound from "@/app/components/route_component/usernotfound";
 import ProfileTabs from "@/app/components/sub_componnets/profile_tabs";
 import { authOptions } from "@/app/utils/auth";
 import { prismaQuery } from "@/app/utils/prisma";
-import { JsonValue } from "@prisma/client/runtime/library";
 import {
     LucideCalendar,
     LucideLink,
@@ -15,22 +13,31 @@ import { getServerSession } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
 
-const ProfilePage = async () => {
+const ProfilePage = async ({ params }: { params: { id: string } }) => {
+    const id = params.id
     const session = await getServerSession(authOptions)
     const userdata = await prismaQuery.user.findFirst({
         where: {
-            username: session?.user.username as string
+            username: id
         }
     })
-    await prismaQuery.$disconnect()
+
+    if (!userdata) return <UserNotFound userid={id} />
 
     return (
         <>
             <div className="overflow-hidden">
-                <BannerComponent profile_banner={userdata?.profile_banner as string | any} />
+                <Image
+                    src={userdata?.profile_banner || "/site/banner.png"}
+                    alt="Home Banner"
+                    width={700}
+                    height={400}
+                    priority
+                    className="inset-0 aspect-21-9 object-cover w-full h-full"
+                />
                 <div className="relative flex w-full px-2 md:px-5">
                     <Image
-                        src={session?.user?.image || "/site/avatar.png"}
+                        src={userdata?.profile_image || "/site/avatar.png"}
                         alt=""
                         priority
                         height={100}
@@ -38,13 +45,28 @@ const ProfilePage = async () => {
                         className="absolute object-cover md:w-24 md:h-24 w-20 h-20 sm:border-4 border-2 rounded-full md:-top-12  -top-6 border-primary-dark-pink "
                     />
                     <div className="flex items-center gap-3 sm:p-3 ml-auto p-3  ">
-                        <EditProfileButton />
+                        <button>
+                            <p className="sm:px-4 py-1 px-2  text-sm font-semibold border border-black rounded font text-color ">
+                                Follow
+                            </p>
+                        </button>
+                        <button>
+                            <p className="sm:px-4 py-1 px-2 text-sm font-semibold text-white bg-black border border-black rounded text-color">
+                                Subscribe
+                            </p>
+                        </button>
+                        <Link
+                            href="/mix/chats/1"
+                            className="p-1 text-white rounded bg-primary-dark-pink "
+                        >
+                            <LucideMail className="w-5 h-5" />
+                        </Link>
                     </div>
                 </div>
                 <div className="flex flex-col gap-2 px-2 mt-2 mb-12 md:px-5">
                     <div className="flex flex-col ">
-                        <h1 className="font-bold ">{session?.user.name}</h1>
-                        <small className="text-gray-500 ">{session?.user.username}</small>
+                        <h1 className="font-bold ">{userdata?.name}</h1>
+                        <small className="text-gray-500 ">@{userdata?.username}</small>
                     </div>
                     <p className="font-medium mb-2 leading-normal text-gray-700">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do

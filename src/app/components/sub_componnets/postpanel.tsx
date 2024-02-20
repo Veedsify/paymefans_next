@@ -1,4 +1,5 @@
 import PostComponent from "../route_component/post_component";
+import LoadingPost from "./loading_post";
 
 const PostPanel = () => {
     return (

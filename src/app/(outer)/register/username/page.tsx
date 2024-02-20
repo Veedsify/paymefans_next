@@ -2,13 +2,84 @@
 import { X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { useUser } from "@/app/lib/userContext";
+import { useRouter } from "next/navigation";
 
 const ChooseUserName = () => {
+    const router = useRouter()
     const ref = useRef<HTMLInputElement>(null);
+    const [buttonActive, setButtonActive] = useState<boolean>(false);
+    const { user, setUser } = useUser()
     const clearInput = () => {
         if (ref.current) {
             ref.current.value = "";
+        }
+    }
+
+    const checkForUsername = async () => {
+        if (!ref.current?.value) {
+            setButtonActive(false);
+            return;
+        }
+        if (ref.current.value.length < 8) {
+            setButtonActive(false);
+            return;
+        }
+        const res = await fetch("/api/auth/signup/username", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: ref.current?.value
+            })
+        })
+
+        if (res.ok) {
+            const json = await res.json();
+            if (json.status === 200) {
+                console.log("Username is available");
+                setButtonActive(true);
+                return
+            }
+        }
+        if (res.ok && res.status === 400) {
+            const json = await res.json();
+            if (json.status === 400) {
+                console.log("Username already exists");
+                setButtonActive(false);
+                return
+            }
+        }
+    }
+
+    const createNewUser = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (ref.current?.value) {
+            const createUser = await fetch("/api/auth/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    fullname: user?.name,
+                    user_id: Math.floor(Math.random() * 1000000).toString(),
+                    username: ref.current?.value,
+                    name: user?.name,
+                    email: user?.email,
+                    phone: user?.phone,
+                    location: user?.location,
+                    password: user?.password,
+                }),
+            });
+            if (createUser.ok) {
+                const body = await createUser.json()
+                setUser(null)
+                if (body.status === 200) {
+                    router.push("/login")
+                }
+            }
         }
     }
 
@@ -26,10 +97,13 @@ const ChooseUserName = () => {
                     </div>
                     <div className="flex flex-col items-start justify-center max-w-screen-xl mx-auto">
                         <h1 className="mt-auto mb-5 text-2xl font-bold text-white">Choose your Username</h1>
-                        <form action="" className="flex-1 w-full mb-5" autoComplete="false">
+                        <form
+                            onSubmit={createNewUser}
+                            action="" className="flex-1 w-full mb-5" autoComplete="false">
                             <div className="flex flex-col gap-3 mb-4 md:max-w-96">
                                 <div className="flex items-center gap-1 outline outline-white outline-1 rounded-lg px-3">
                                     <input
+                                        onChange={checkForUsername}
                                         ref={ref}
                                         type="text" id="name" className="block w-full py-3 font-bold text-white bg-transparent text-sm outline-none accent-primary-dark-pink" placeholder="Username" />
                                     <div
@@ -41,7 +115,13 @@ const ChooseUserName = () => {
                                 </div>
                             </div>
                             <div>
-                                <button className="block w-full px-3 py-3 text-sm font-bold text-white rounded-lg bg-primary-dark-pink md:max-w-96 disabled:bg-gray-600">Next</button>
+                                {buttonActive ? (
+                                    <button
+                                        className="block w-full px-3 py-3 text-sm font-bold text-white rounded-lg bg-primary-dark-pink md:max-w-96 disabled:bg-gray-600">Next</button>
+                                ) : (
+                                    <button
+                                        className="block w-full px-3 py-3 text-sm font-bold text-white rounded-lg md:max-w-96 bg-gray-600">Next</button>
+                                )}
                             </div>
                         </form>
                     </div>
