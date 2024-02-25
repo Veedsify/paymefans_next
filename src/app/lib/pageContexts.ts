@@ -7,19 +7,19 @@ export type SideBarContextType = {
 };
 
 export const useSideBarContext = create<SideBarContextType>()(
-  persist(
-    (set) => ({
-      sideBarState: false,
-      setSideBar: (value: boolean) =>
-        set(() => ({
-          sideBarState: value,
-        })),
-    }),
-    {
-      name: "sideBar-context",
-      storage: createJSONStorage(() => localStorage),
-    }
-  )
+  // persist(
+  (set) => ({
+    sideBarState: false,
+    setSideBar: (value: boolean) =>
+      set(() => ({
+        sideBarState: value,
+      })),
+  })
+  // {
+  //   name: "sideBar-context",
+  //   storage: createJSONStorage(() => localStorage),
+  // }
+  // )
 );
 
 // MODAL CONTEXT

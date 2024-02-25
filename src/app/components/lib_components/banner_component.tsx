@@ -1,7 +1,9 @@
 "use client"
+import { documentcookie } from "@/app/utils/documentcookie";
 import { LucideCamera } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 interface BannerComponentProps {
     profile_banner?: string
@@ -10,9 +12,39 @@ const BannerComponent = ({ profile_banner }: BannerComponentProps) => {
     const [file, setFile] = useState<File | null>(null)
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0] !== undefined) {
+            if (e.target.files[0].size > 2000000) return toast.error('Image size should be less than 2MB')
+            const acceptedImageTypes = ['image/jpeg', 'image/png']
+            if (!acceptedImageTypes.includes(e.target.files[0].type)) return toast.error('Only .jpeg and .png images are allowed')
             setFile(e.target.files[0])
+            toast.promise(uploadBannerImage(e.target.files[0]), {
+                loading: 'Uploading banner image...',
+                success: 'Banner image uploaded successfully',
+                error: 'Failed to upload banner image',
+            })
         }
     }
+    const uploadBannerImage = async (file: File) => {
+        const formData = new FormData()
+        formData.append('banner', file)
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_EXPRESS_URL}/profile/banner/change`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${documentcookie}`,
+                },
+            })
+            if (response.ok) {
+                return response.json()
+            } else {
+                throw new Error('Failed to upload banner image')
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+
     return (
         <div className="relative">
             <Image

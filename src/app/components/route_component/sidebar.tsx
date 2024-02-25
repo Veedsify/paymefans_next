@@ -7,24 +7,31 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import swal from "sweetalert";
+import { AuthUserProps } from "@/app/types/user";
 
+interface SideBarProps {
+  points: number | null;
+  user: AuthUserProps | undefined;
+}
 
-const SideBar = () => {
+const SideBar = ({
+  points, user
+}: SideBarProps) => {
   const { sideBarState, setSideBar } = useSideBarContext()
   const pathname = usePathname()
-  const { data: session } = useSession()
   useEffect(() => {
     const closeSideBar = () => {
       setSideBar(false)
     }
     closeSideBar()
   }, [pathname, setSideBar]);
+
   return (
     <>
       <div className={`lg:ml-auto bg-white h-screen lg:h-screen fixed lg:sticky top-0 overflow-auto smart-width p-4 z-50 shadow-xl lg:shadow-none lg:border-r duration-300 ease-in-out  ${sideBarState ? "left-0" : "-left-full"}`
       }>
         <div className="mt-8 mb-16 ">
-          <Image className="h-auto" width={150} height={150} priority src="/site/logo2.png" alt="" />
+          <Image className="block w-auto h-8" quality={100} width={150} height={30} priority src="/site/logo2.png" alt="" />
         </div>
         <div>
           <div className="flex items-center gap-4 mb-4">
@@ -32,21 +39,21 @@ const SideBar = () => {
               width={50}
               height={50}
               priority
-              src={session?.user.image.url || "/site/avatar.png"}
+              src={user ? user.user.profile_image : "/site/banner.png"}
               className="object-cover w-12 h-12 rounded-full"
               alt=""
             />
             <div>
               <h2 className="mb-0 text-sm font-bold leading-none">
-                {session?.user.name}
+                {user?.user.name ? user.user.name : "Loading..."}
               </h2>
-              <span className="text-sm text-gray-600">{session?.user.username}</span>
+              <span className="text-sm text-gray-600">{user ? user.user.username : "Loading..."}</span>
             </div>
           </div>
           <div className="pt-5 mb-3">
-            <h2 className="flex items-center mb-1 text-xl font-bold leading-none">1,000
+            <h2 className="flex items-center mb-1 text-xl font-bold leading-none">{points ? points.toLocaleString("en-Us") : 0}
               <span className="ml-2">
-                <Image width={20} height={20} src="/site/coin.svg" className="h-auto" alt="" />
+                <Image width={20} height={20} src="/site/coin.svg" className="w-auto h-5 aspect-square" alt="" />
               </span>
             </h2>
             <span className="text-sm font-medium text-gray-600">Your Balance</span>

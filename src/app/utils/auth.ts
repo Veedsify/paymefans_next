@@ -10,7 +10,7 @@ import { hashPassword } from "./passwordHasher";
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prismaQuery) as Adapter,
   pages: {
-    signIn: "/login",
+    signIn: "/",
   },
   providers: [
     CredentialsProvider({

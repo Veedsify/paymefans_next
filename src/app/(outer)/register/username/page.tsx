@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { useUser } from "@/app/lib/userContext";
 import { useRouter } from "next/navigation";
+import axiosServer from "@/app/utils/axios";
+import axios from "axios";
+import swal from "sweetalert";
 
 const ChooseUserName = () => {
     const router = useRouter()
@@ -26,28 +29,24 @@ const ChooseUserName = () => {
             setButtonActive(false);
             return;
         }
-        const res = await fetch("/api/auth/signup/username", {
+        const res = await axiosServer('/auth/signup/username', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
+            data: {
                 username: ref.current?.value
-            })
+            },
         })
 
-        if (res.ok) {
-            const json = await res.json();
-            if (json.status === 200) {
-                console.log("Username is available");
+        if (res.data) {
+            if (res.data.status === true) {
                 setButtonActive(true);
                 return
             }
         }
-        if (res.ok && res.status === 400) {
-            const json = await res.json();
-            if (json.status === 400) {
-                console.log("Username already exists");
+        if (res.status === 200) {
+            if (res.data.status === false) {
                 setButtonActive(false);
                 return
             }
@@ -56,30 +55,84 @@ const ChooseUserName = () => {
 
     const createNewUser = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (ref.current?.value) {
-            const createUser = await fetch("/api/auth/signup", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    fullname: user?.name,
-                    user_id: Math.floor(Math.random() * 1000000).toString(),
-                    username: ref.current?.value,
-                    name: user?.name,
-                    email: user?.email,
-                    phone: user?.phone,
-                    location: user?.location,
-                    password: user?.password,
-                }),
-            });
-            if (createUser.ok) {
-                const body = await createUser.json()
-                setUser(null)
-                if (body.status === 200) {
-                    router.push("/login")
+
+        try {
+
+            if (ref.current?.value) {
+                const createUser = await axiosServer("/auth/signup", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    data: {
+                        fullname: user?.name,
+                        user_id: Math.floor(Math.random() * 1000000).toString(),
+                        username: ref.current?.value,
+                        name: user?.name,
+                        email: user?.email,
+                        phone: user?.phone,
+                        location: user?.location,
+                        password: user?.password,
+                    },
+                });
+                if (createUser.data.status === true) {
+                    setUser(null)
+                    return swal({
+                        title: "Success",
+                        text: "Account created successfully",
+                        icon: "success",
+                        buttons: {
+                            cancel: false,
+                            confirm: {
+                                text: "Ok",
+                                value: true,
+                                visible: true,
+                                className: "bg-primary-dark-pink text-white rounded-lg font-bold text-sm",
+                                closeModal: true
+                            }
+                        }
+                    }).then((willRedirect) => {
+                        if (willRedirect) {
+                            router.push("/login");
+                        }
+                    })
+                }
+
+                if (createUser.data.status === false) {
+                    swal({
+                        title: "Error",
+                        text: createUser.data.message,
+                        icon: "error",
+                        buttons: {
+                            cancel: false,
+                            confirm: {
+                                text: "Ok",
+                                value: true,
+                                visible: true,
+                                className: "bg-primary-dark-pink text-white rounded-lg font-bold text-sm",
+                                closeModal: true
+                            }
+                        }
+                    })
                 }
             }
+        } catch (err) {
+            return swal({
+                title: "Error",
+                text: "Sorry an error occured",
+                icon: "error",
+                buttons: {
+                    cancel: false,
+                    confirm: {
+                        text: "Ok",
+                        value: true,
+                        visible: true,
+                        className: "bg-primary-dark-pink text-white rounded-lg font-bold text-sm",
+                        closeModal: true
+                    }
+                }
+            })
+
         }
     }
 
@@ -120,6 +173,7 @@ const ChooseUserName = () => {
                                         className="block w-full px-3 py-3 text-sm font-bold text-white rounded-lg bg-primary-dark-pink md:max-w-96 disabled:bg-gray-600">Next</button>
                                 ) : (
                                     <button
+                                        disabled={true}
                                         className="block w-full px-3 py-3 text-sm font-bold text-white rounded-lg md:max-w-96 bg-gray-600">Next</button>
                                 )}
                             </div>

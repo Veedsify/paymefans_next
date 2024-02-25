@@ -1,16 +1,16 @@
-import type { NextRequest } from "next/server";
-
-// This function can be marked `async` if using `await` inside
-import { withAuth } from "next-auth/middleware";
+import { NextResponse, type NextRequest } from "next/server";
 
 // middleware is applied to all routes, use conditionals to select
-export default withAuth(function middleware(req: NextRequest) {}, {
-  callbacks: {
-    authorized: ({ req, token }) => {
-      if (req.nextUrl.pathname.startsWith("/mix") && token === null) {
-        return false;
-      }
-      return true;
-    },
-  },
-});
+export function middleware(req: NextRequest) {
+  const cookies = req.cookies;
+  const token = cookies.get("token")?.value;
+  if (token && token.length > 0) {
+    return NextResponse.next();
+  }
+
+  return NextResponse.redirect(new URL("/login", req.url));
+}
+
+export const config = {
+  matcher: ["/mix/:path*", "/hookup/:path*"],
+};

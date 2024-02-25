@@ -6,11 +6,9 @@ import ModalComponent from "../components/route_component/modalComponent";
 import SideModels from "../components/route_component/side_models";
 import Header from "../components/route_component/header";
 import SideBar from "../components/route_component/sidebar";
-import Provider from "../utils/sessionProvider";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../utils/auth";
-import { redirect } from "next/navigation";
 import { Toaster } from "react-hot-toast";
+import getUserPoints from "../utils/dataFetch/points";
+import getUserData from "../utils/dataFetch/userdata";
 
 const font = Inter({ subsets: ["cyrillic", "cyrillic-ext", "greek", "greek-ext", "latin", "latin-ext"], display: "swap", adjustFontFallback: true });
 
@@ -24,30 +22,33 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions)
-  if (!session) return redirect("/login")
+
+  const points = await getUserPoints()
+  const user = await getUserData()
+
   return (
     <html lang="en">
       <body className={font.className}>
         <Toaster />
-        <Provider session={session}>
-          <div className="relative grid min-h-screen lg:grid-cols-9">
-            <div className="col-span-2">
-              <SideBar />
-            </div>
-            <div className="col-span-7 overflow-auto border-r">
-              <Header />
-              <div className="grid min-h-screen lg:grid-cols-7 ">
-                <div className="col-span-4 md:border-r">
-                  {children}
-                </div>
-                <SideModels />
-              </div>
-            </div>
-            <MenuButtons />
-            <ModalComponent />
+        <div className="relative grid min-h-screen lg:grid-cols-9">
+          <div className="col-span-2">
+            <SideBar
+              points={points}
+              user={user}
+            />
           </div>
-        </Provider>
+          <div className="col-span-7 overflow-auto border-r">
+            <Header />
+            <div className="grid min-h-screen lg:grid-cols-7 ">
+              <div className="col-span-4 md:border-r">
+                {children}
+              </div>
+              <SideModels />
+            </div>
+          </div>
+          <MenuButtons />
+          <ModalComponent />
+        </div>
       </body>
     </html>
   );

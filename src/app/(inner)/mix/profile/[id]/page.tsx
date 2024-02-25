@@ -1,6 +1,6 @@
 import UserNotFound from "@/app/components/route_component/usernotfound";
 import ProfileTabs from "@/app/components/sub_componnets/profile_tabs";
-import { authOptions } from "@/app/utils/auth";
+import getUserProfile from "@/app/utils/dataFetch/profiledata";
 import { prismaQuery } from "@/app/utils/prisma";
 import {
     LucideCalendar,
@@ -9,26 +9,19 @@ import {
     LucideMail,
     LucideMapPin,
 } from "lucide-react";
-import { getServerSession } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
 
 const ProfilePage = async ({ params }: { params: { id: string } }) => {
     const id = params.id
-    const session = await getServerSession(authOptions)
-    const userdata = await prismaQuery.user.findFirst({
-        where: {
-            username: id
-        }
-    })
-
-    if (!userdata) return <UserNotFound userid={id} />
+    const userdata = await getUserProfile({ user_id: id })
+    if (!userdata || userdata === null) return <UserNotFound userid={id} />
 
     return (
         <>
             <div className="overflow-hidden">
                 <Image
-                    src={userdata?.profile_banner || "/site/banner.png"}
+                    src={userdata?.user.profile_banner || "/site/banner.png"}
                     alt="Home Banner"
                     width={700}
                     height={400}
@@ -37,7 +30,7 @@ const ProfilePage = async ({ params }: { params: { id: string } }) => {
                 />
                 <div className="relative flex w-full px-2 md:px-5">
                     <Image
-                        src={userdata?.profile_image || "/site/avatar.png"}
+                        src={userdata?.user.profile_image || "/site/avatar.png"}
                         alt=""
                         priority
                         height={100}
@@ -65,32 +58,40 @@ const ProfilePage = async ({ params }: { params: { id: string } }) => {
                 </div>
                 <div className="flex flex-col gap-2 px-2 mt-2 mb-12 md:px-5">
                     <div className="flex flex-col ">
-                        <h1 className="font-bold ">{userdata?.name}</h1>
-                        <small className="text-gray-500 ">@{userdata?.username}</small>
+                        <h1 className="font-bold ">{userdata?.user.name}</h1>
+                        <small className="text-gray-500 ">{userdata?.user.username}</small>
                     </div>
                     <p className="font-medium mb-2 leading-normal text-gray-700">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                        eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        {userdata?.user.bio ? userdata?.user.bio : ""}
                     </p>
-                    <Link
-                        href="/"
-                        className="flex items-center gap-2 font-medium text-primary-text-dark-pink text-sm mb-2"
-                    >
-                        <LucideLink className="text-primary-text-dark-pink" size={18} />
-                        keshaadams.com/about
-                    </Link>
+                    {userdata?.user?.website && <>
+                        <Link
+                            href={userdata?.user.website ? userdata?.user.website : ""}
+                            target="_blank"
+                            className="font-medium text-primary-text-dark-pink text-sm mb-2 inline-block"
+                        >
+                            <LucideLink className="text-primary-text-dark-pink inline-block mr-2" size={18} />
+                            {userdata?.user.website ? userdata?.user.website : ""}
+                        </Link>
+                    </>}
                     <div className="flex gap-3 flex-wrap text-sm items-center font-semibold text-gray-700 mb-2">
                         <span className="flex gap-2 items-center">
                             <LucideMapPin className="text-primary-text-dark-pink" size={18} />
-                            <span>Lagos, {userdata?.location}</span>
+                            <span>Lagos, {userdata?.user.location}</span>
                         </span>
-                        <span className="flex items-center gap-2">
-                            <LucideLock className="text-primary-text-dark-pink" size={18} />
-                            <span>Model</span>
-                        </span>
+                        {
+                            userdata?.user.is_model ? (
+                                <span className="flex items-center gap-2">
+                                    <LucideLock className="text-primary-text-dark-pink" size={18} />
+                                    <span>Model</span>
+                                </span>
+                            ) : ""
+                        }
                         <span className="flex items-center gap-2">
                             <LucideCalendar className="text-primary-text-dark-pink" size={18} />
-                            <span>Joined Nov 2015</span>
+                            <span>Joined {
+                                userdata?.user.created_at ? new Date(userdata?.user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : ""
+                            }</span>
                         </span>
                     </div>
 

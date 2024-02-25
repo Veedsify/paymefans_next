@@ -27,7 +27,6 @@ const Register = () => {
         // Update user state in the context only when userData changes:
         if (userData) {
             setUser(userData);
-            console.log(userData)
         }
     }, [userData, setUser]);
 

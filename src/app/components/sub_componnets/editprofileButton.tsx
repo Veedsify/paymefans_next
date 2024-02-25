@@ -1,13 +1,12 @@
 "use client"
+import { AuthUserProps } from "@/app/types/user";
 import { Facebook, Instagram, LucideCamera, LucideInstagram, Twitter, X } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-const EditProfileButton = () => {
+const EditProfileButton = ({ user }: { user: AuthUserProps | undefined }) => {
     const [open, setOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null)
-    const { data: session } = useSession()
     useEffect(() => {
         if (open) {
             document.body.style.overflow = "hidden"
@@ -44,7 +43,7 @@ const EditProfileButton = () => {
                     <label htmlFor="imageUpload">
                         <div className="relative border-[3px] mb-3 inline-block p-2 rounded-full border-dotted group">
                             <Image
-                                src={file ? URL.createObjectURL(file) : session?.user?.image || "/site/avatar.png"}
+                                src={file ? URL.createObjectURL(file) : user?.user.profile_image || "/site/avatar.png"}
                                 alt=""
                                 width={100}
                                 priority
@@ -64,7 +63,7 @@ const EditProfileButton = () => {
                     <div>
                         <input
                             type="text"
-                            defaultValue={session?.user?.name || ""}
+                            defaultValue={user?.user.name}
                             className="w-full block border mb-3 border-gray-300 p-4 outline-none text-black rounded-xl"
                             placeholder="Name "
                         />
@@ -73,13 +72,14 @@ const EditProfileButton = () => {
                         <input
                             type="text"
                             className="w-full block border mb-3 border-gray-300 p-4 outline-none text-black rounded-xl"
+                            defaultValue={user?.user.location ? user?.user.location : ""}
                             placeholder="Location "
                         />
                     </div>
                     <div>
                         <input
                             type="email"
-                            defaultValue={session?.user?.email || ""}
+                            defaultValue={user?.user.email ? user?.user.email : ""}
                             className="w-full block border mb-3 border-gray-300 p-4 outline-none text-black rounded-xl select-none"
                             readOnly
                             disabled
@@ -93,6 +93,7 @@ const EditProfileButton = () => {
                             rows={6}
                             className="resize-none w-full block outline-none border mb-3 border-gray-300 p-4 text-black rounded-xl"
                             placeholder="Bio"
+                            defaultValue={user?.user.bio ? user?.user.bio : ""}
                         ></textarea>
                     </div>
                     <div>

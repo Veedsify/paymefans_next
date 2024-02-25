@@ -1,10 +1,7 @@
-"use client"
 import Toggle from "@/app/components/sub_componnets/checked";
-import SetSubscription from "@/app/components/sub_componnets/setsubscription";
+import SubscriptionState from "@/app/components/sub_componnets/subscriptionState";
 import Image from "next/image";
-import { useState } from "react";
 const Settings = () => {
-    const [subscription, setSubscriptionState] = useState(false);
 
     return (
         <div className="p-4 lg:mb-4 mb-20">
@@ -75,13 +72,7 @@ const Settings = () => {
                 Enable free message
             </span>
 
-            <button onClick={() => setSubscriptionState(!subscription)}
-                className="text-center bg-[#FAE2FF] my-2 text-primary-dark-pink w-full p-4 rounded-xl block cursor-pointer font-bold">
-                SET SUBSCRIPTION PRICE
-            </button>
-
-            {subscription && (<SetSubscription />)}
-
+            <SubscriptionState />
             <button className="text-center text-white bg-primary-dark-pink w-full p-4 rounded-xl">
                 SAVE
             </button>

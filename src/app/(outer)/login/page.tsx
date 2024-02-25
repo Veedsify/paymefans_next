@@ -1,4 +1,7 @@
 "use client"
+import { getUser } from "@/app/lib/user";
+import { useUser } from "@/app/lib/userContext";
+import axiosServer from "@/app/utils/axios";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,6 +10,7 @@ import { useState } from 'react';
 import toast from "react-hot-toast";
 
 const Login = () => {
+    const { setUser } = getUser()
     const router = useRouter()
     const [loginCredentials, setLoginCredentials] = useState({
         email: "",
@@ -17,15 +21,15 @@ const Login = () => {
     }
     const submitLoginForm = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const loginThisUser = await signIn("credentials", {
-            email: loginCredentials.email,
-            password: loginCredentials.password,
-            redirect: true,
+        const loginThisUser = await axiosServer.post("/auth/login", {
+            data: loginCredentials
         });
-        if (loginThisUser?.ok) {
+        if (loginThisUser?.data?.status === true) {
             toast.success("Login successful");
-            return router.push(loginThisUser.url as string);
-        } else if (loginThisUser?.error) {
+            document.cookie = `token=${loginThisUser.data.token}`;
+            setUser(loginThisUser.data.user)
+            return router.push("/mix");
+        } else if (loginThisUser.data.status === false) {
             toast.error("Invalid Login credentials");
             return;
         }
